@@ -1,5 +1,6 @@
 ﻿#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "main.h"
 
 typedef struct {
@@ -7,18 +8,25 @@ typedef struct {
 	int parent, lchild, rchild;
 }HTNode, * HuffmanTree;
 
+typedef char** HuffmanCode;
+
 static int n_create;
 
 void CreateHuffmanTree(HuffmanTree* HT, int n);
+void CreateHuffmanCode(HuffmanTree HT, HuffmanCode* HC, int n);
 void Select(HuffmanTree HT, int max_range, int* min_index_1, int* min_index_2);
 void PrintHuffmanTree(HuffmanTree HT);
+void PrintHuffmanCode(HuffmanCode HC, int n);
 
 void main() {
 	HuffmanTree HT;
+	HuffmanCode HC;
 	printf("请输入要插入的元素数目：");
 	scanf("%d", &n_create);
 	CreateHuffmanTree(&HT, n_create);
 	PrintHuffmanTree(HT);
+	CreateHuffmanCode(HT, &HC, n_create);
+	PrintHuffmanCode(HC, n_create);
 }
 
 void CreateHuffmanTree(HuffmanTree* HT, int n) {
@@ -48,8 +56,42 @@ void CreateHuffmanTree(HuffmanTree* HT, int n) {
 	}
 }
 
+void CreateHuffmanCode(HuffmanTree HT, HuffmanCode* HC, int n) {
+	if (HT == NULL)
+	{
+		return;
+	}
+	int i, f, c, start;
+	char* cd = (char*)malloc(n * sizeof(char));
+	cd[n - 1] = '\0';
+	(*HC) = (HuffmanCode)malloc((n + 1) * sizeof(char*));
+	for (i = 1; i <= n; i++)
+	{
+		f = HT[i].parent;
+		c = i;
+		start = n - 1;
+		while (f != 0)
+		{
+			start--;
+			if (HT[f].lchild == c)
+			{
+				cd[start] = '0';
+			}
+			else
+			{
+				cd[start] = '1';
+			}
+			c = f;
+			f = HT[f].parent;
+		}
+		(*HC)[i] = (char*)malloc((n - start) * sizeof(char));
+		strcpy((*HC)[i], &cd[start]);
+	}
+	free(cd);
+}
+
 void Select(HuffmanTree HT, int max_range, int* min_index_1, int* min_index_2) {
-	int i, init_num, min_weight_1, min_weight_2;
+	int i, init_num, min_index_temp, min_weight_1, min_weight_2, min_weight_temp;
 	init_num = 0;
 	for (i = 1; i <= max_range; i++)
 	{
@@ -94,6 +136,11 @@ void Select(HuffmanTree HT, int max_range, int* min_index_1, int* min_index_2) {
 			min_weight_2 = HT[i].weight;
 		}
 	}
+	if (min_weight_1 > min_weight_2)
+	{
+		min_weight_temp = min_weight_1, min_weight_1 = min_weight_2, min_weight_2 = min_weight_temp;
+		min_index_temp = (*min_index_1), (*min_index_1) = (*min_index_2), (*min_index_2) = min_index_temp;
+	}
 }
 
 void PrintHuffmanTree(HuffmanTree HT) {
@@ -122,4 +169,12 @@ void PrintHuffmanTree(HuffmanTree HT) {
 		printf(" %d", HT[i].rchild);
 	}
 	printf("\n");
+}
+
+void PrintHuffmanCode(HuffmanCode HC, int n) {
+	int i;
+	for (i = 1; i <= n; i++)
+	{
+		printf("第%d个元素的哈夫曼编码：%s\n", i, HC[i]);
+	}
 }
